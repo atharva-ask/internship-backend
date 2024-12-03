@@ -30,6 +30,7 @@ colname =(
     )
 
 def getCourseNameIdmap(yearval:int, semval:int):
+    cur = conn.cursor()
     cur.execute(f"""
             SELECT c_code, title FROM course 
             WHERE year = '{yearval}' AND sem = '{semval}';
@@ -46,6 +47,7 @@ def getCourseNameIdmap(yearval:int, semval:int):
 
 @app.get('/subjects')
 def subjects(yearval:int, semval:int):
+    cur = conn.cursor()
     cur.execute(f"""
         SELECT c_code, title, id FROM course 
         WHERE year = '{yearval}' AND sem = '{semval}';
@@ -71,6 +73,7 @@ def getoldpoval(pk:int):
     # sub_char = sub.toCharArray()
     sub = ()
     res = list()
+    cur = conn.cursor()
     cur.execute(f"""
         Select po1, po2, po3, po4, 
         po5, po6,po7, po8, po9,po10, 
@@ -82,6 +85,7 @@ def getoldpoval(pk:int):
         return HTTPException(status_code=400, detail="Not sufficient data")
     # print(data)
     res.append(data)
+    cur = conn.cursor()
     cur.execute(f"""
         Select pso1, pso2, pso3
         from course 
@@ -92,6 +96,7 @@ def getoldpoval(pk:int):
         return HTTPException(status_code=400, detail="Not sufficient data")
     res.append(data)
 
+    cur = conn.cursor()
     cur.execute(f"""
         Select co_att 
         from course 
@@ -109,6 +114,7 @@ def getoldpoval(pk:int):
 def update_po(pk: int, val: float, colname: str):
 
     try:
+        cur = conn.cursor()
         query = f"""
             UPDATE course 
             SET {colname} = %s WHERE id = %s;
@@ -124,6 +130,7 @@ def update_po(pk: int, val: float, colname: str):
 
 @app.get('/getIndirectPO/{year}')
 def getPOIndirect(year:int):
+    cur = conn.cursor()
     cur.execute(f"""
         Select * from po_indirect
         where year = {year}
@@ -138,6 +145,7 @@ def getPOIndirect(year:int):
 
 @app.post('/setIndirectPO')
 def getPOIndirect(colname:str, colval:float, yearval:int):
+    cur = conn.cursor()
     try :
         cur.execute(f"""
         UPDATE po_indirect
@@ -153,6 +161,7 @@ def getPOIndirect(colname:str, colval:float, yearval:int):
 
 @app.get('/getTargetPO/{year}')
 def getTargetPO(year: int):
+    cur = conn.cursor()
     cur.execute(f"""
         select * from target_po
         where year = {year};
@@ -167,6 +176,7 @@ def getTargetPO(year: int):
 
 @app.post('/setTargetPO')
 def setTargetPO(colname:str, colval:float, yearval:int):
+    cur = conn.cursor()
     try :
         cur.execute(f"""
         UPDATE target_po
@@ -185,6 +195,7 @@ def setTargetPO(colname:str, colval:float, yearval:int):
 # @app.get('/column_operation/')
 
 def getcolumnop(colname:str):
+    cur = conn.cursor()
     cur.execute(f"""
         Select {colname}, co_att from course
     """)
@@ -213,6 +224,7 @@ def getcolumnop(colname:str):
 
 @app.get('/getDirectPO')
 def getDirectPO(year:str):
+    cur = conn.cursor()
     try:
         data_list = list()
         for name in colname:
@@ -235,6 +247,8 @@ def getPOAttainment(year:int):
     for name in colname:
         val = getcolumnop(name)
         list1.append(val)
+
+    cur = conn.cursor()
 
     cur.execute(f"""
         Select * from po_indirect
@@ -260,6 +274,7 @@ def scaledPOAttainment(year : int):
 
 @app.get('/acheivedPoAttainment')
 def getacheivedPoAttainment(year : int):
+    cur = conn.cursor()
     scaledPO = scaledPOAttainment(year)
     targetPO = getTargetPO(year)
     if(len(targetPO) == 0):
